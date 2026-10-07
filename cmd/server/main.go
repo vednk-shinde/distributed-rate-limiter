@@ -36,7 +36,7 @@ func main() {
 	flag.Parse()
 
 	cfg := limiter.Config{Rate: *rate, Burst: *burst}
-	localCfg := limiter.Config{Rate: *rate / float64(max(*instances, 1)), Burst: max(*burst / max(*instances, 1), 1)}
+	localCfg := limiter.Config{Rate: *rate / float64(max(*instances, 1)), Burst: max(*burst/max(*instances, 1), 1)}
 	local := limiter.NewMemory(localCfg, nil)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
