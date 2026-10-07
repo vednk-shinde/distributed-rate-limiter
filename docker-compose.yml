@@ -1,0 +1,26 @@
+# Two "regional" Redis nodes (priority order) and two limiter API instances
+# behind nginx. Stop a Redis container to watch failover happen.
+services:
+  redis-a:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+  redis-b:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+  limiter-1: &limiter
+    build: .
+    environment:
+      REDIS_ADDRS: redis-a:6379,redis-b:6379
+      RATE: "100"
+      BURST: "200"
+      INSTANCES: "2"
+    depends_on: [redis-a, redis-b]
+  limiter-2:
+    <<: *limiter
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports: ["8080:80"]
+    volumes: ["./deploy/nginx.conf:/etc/nginx/nginx.conf:ro"]
+    depends_on: [limiter-1, limiter-2]
